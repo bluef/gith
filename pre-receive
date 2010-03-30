@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import re
+
+'''
+the acl should looks like:
+avail|userA|branchA
+avail|userB|branchB,branchA,master
+unavail|userC|branchC
+
+and put the acl file under .git/ with name acl
+'''
+
+line = sys.stdin.readline()
+result = re.compile(r'^(.+?)\s(.+?)\s(.+)\n$').search(line)
+
+if result is None : #unable to resolve the parameters
+	print 'Critical error'
+	sys.exit(1)
+else :
+	ref = result.group(3).strip()
+
+user = os.getenv("GIT_USER")
+gitDir = os.getcwd()
+aclPath = gitDir[:-5] + '/.git/acl' #get the path of current directory
+
+if user is None :
+	print 'You need to push with ssh key'
+	exit(1)
+
+print user , "is pushing to" , ref
+
+access_ctrl = {}
+for line in open(aclPath):
+    state, g_user, branches = line.strip().split('|')
+    access_ctrl.setdefault(g_user, {'branches': branches.split(','), 'state': state})
+
+if user not in access_ctrl or access_ctrl[user]['state'] == 'unavail':
+	print "Your account is locked"
+	sys.exit(1)
+	
+ref_name = re.compile(r'refs/heads/(.+)$').search(ref)
+if not ref_name:
+	print "Critical Error"
+	sys.exit(1)
+	
+if ref_name.group(1) not in access_ctrl[user]['branches']:
+    print "You don't have permission to push to ", ref
+    sys.exit(1)
+
+sys.exit(0)
