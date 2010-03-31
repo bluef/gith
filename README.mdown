@@ -2,6 +2,20 @@ Gith
 ========
 A collection of git hook scripts that I use for improving productivity in daily works as the administrator of a repo. I just start learning Python for writing all these scripts so they look not so good. :)
 
+Installing Gith
+-------------------
+After downloading the source from Github, you need to modify your sshd_config file:
+
+	/etc/ssh/sshd_config
+
+Set the value of PermitUserEnvironment to yes
+
+And in the authorized_keys file, please add the environment variables to the beginning of each key for identifying the user.
+
+	environment="GIT_USER=your-name-here" ssh-rsa...
+
+Then copy all the scripts to the .git/hooks directory, also make them executable.
+
 
 pre-receive
 -------------------
@@ -9,5 +23,5 @@ This script will help you restrict the access of the user. That means you can sp
 
 post-receive
 -------------------
-This script will be triggered after someone pushed changes to the server. It will send an email to you with the list of modified files.
+This script will be triggered after someone pushing changes to the server. It will send an email to you with the list of modified files.
 
