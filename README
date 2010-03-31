@@ -1,0 +1,9 @@
+Gith is a collection of git hook scripts that I use for improving productivity in daily works as the administrator of a repo. I just start learning Python for writing all these scripts so they look not so good. :)
+
+
+pre-receive
+This script will help you restrict the access of the user. That means you can specify the branches some user has access to. For example, userA only has access to branchA, when userB has access to both master and branchB. This script need the acl file to work with. Format of acl file is included in it.
+
+post-receive
+This script will be triggered after someone pushed changes to the server. It will send an email to you with the list of modified files.
+
