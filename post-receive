@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import re
+import smtplib
+
+from email.mime.text import MIMEText
+from subprocess import Popen
+from subprocess import PIPE
+
+'''
+send the mail to the admin after someone has pushed to the remote server
+'''
+
+receiver = 'you@host' #your email address
+sender = 'someone@somehost' #need to be a valid one
+
+
+	
+def sendMail(user, ref, content):
+	msg = MIMEText('%(name)s just pushed to %(ref)s \n\nList of files been modified:\n %(content)s' % {'name':user, 'ref':ref, 'content':content})
+	msg['Subject'] = '[PUSH ALERT] %(name)s just pushed to %(ref)s' % {'name':user, 'ref':ref}
+	msg['From'] = sender
+	msg['To'] = receiver
+	
+	server = smtplib.SMTP('localhost')
+	server.sendmail(sender, [receiver], msg.as_string())
+	server.quit()
+
+def getRevList(oldRev, newRev):
+	missedRevs = Popen('git rev-list ' + oldRev + '..' + newRev, stdout=PIPE, shell=True).communicate()[0].split('\n')
+	return missedRevs
+
+def getModifiedFiles(rev):
+	modifiedFiles = Popen("git log -1 --name-only --pretty=format:'' " + rev, stdout=PIPE, shell=True).communicate()[0].split('\n')
+	return modifiedFiles
+
+def generateMsg(rev, files):
+	content = '[rev] ' + rev + '\n'
+	for fileObj in files:
+		if fileObj != '':
+			content = content + '\t' + fileObj + '\n'
+	
+	content = content + '\n'
+	
+	return content 
+
+user = os.getenv("GIT_USER")
+
+line = sys.stdin.readline() #read push information with stdin
+result = re.compile(r'^(.+?)\s(.+?)\s(.+)\n$').search(line)
+if result is None : #unable to resolve the parameters
+	print 'Critical error'
+	sys.exit(1)
+else :
+	oldRev = result.group(1).strip()
+	newRev = result.group(2).strip()
+	ref = result.group(3).strip()
+	
+msg = ''
+revs = getRevList(oldRev, newRev)
+for rev in revs:
+	if rev != '':
+		fileList = getModifiedFiles(rev)
+		msg = msg + generateMsg(rev, fileList)
+
+sendMail(user, ref, msg)
