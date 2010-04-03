@@ -11,6 +11,8 @@ from subprocess import PIPE
 send the mail to developers after the master branch has been updated by admin
 '''
 
+COMMASPACE = ', '
+
 receivers = ['userA@a.com', 'userB@b.com'] #recepients
 sender = 'someone@somehost' #need to be a valid one
 
@@ -21,7 +23,7 @@ diff = Popen("git diff --stat HEAD.." + lastRev, stdout=PIPE, shell=True).commun
 msg = MIMEText('Master branch just updated \n\nList of files been modified:\n\n %(content)s' % {'content':diff})
 msg['Subject'] = '[REPO ALERT] Master branch just updated'
 msg['From'] = sender
-msg['To'] = receiver
+msg['To'] = COMMASPACE.join(receivers)
 
 server = smtplib.SMTP('localhost')
 server.sendmail(sender, receivers, msg.as_string())
