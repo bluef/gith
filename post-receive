@@ -63,6 +63,9 @@ revs = getRevList(oldRev, newRev)
 for rev in revs:
 	if rev != '':
 		fileList = getModifiedFiles(rev)
+		if not fileList:
+			break
+		
 		msg = msg + generateMsg(rev, fileList)
 
 sendMail(user, ref, msg)
