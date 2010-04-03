@@ -25,3 +25,7 @@ post-receive
 -------------------
 This script will be triggered after someone pushing changes to the server. It will send an email to you with the list of modified files.
 
+post-merge
+-------------------
+This script will be triggered after the administrator merge works in other developer's branch into master. It will send an email to developers with the list of modified files.
+
