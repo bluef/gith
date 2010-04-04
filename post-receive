@@ -28,23 +28,9 @@ def sendMail(user, ref, content):
 	server.sendmail(sender, [receiver], msg.as_string())
 	server.quit()
 
-def getRevList(oldRev, newRev):
-	missedRevs = Popen('git rev-list ' + oldRev + '..' + newRev, stdout=PIPE, shell=True).communicate()[0].split('\n')
-	return missedRevs
-
-def getModifiedFiles(rev):
-	modifiedFiles = Popen("git log -1 --name-only --pretty=format:'' " + rev, stdout=PIPE, shell=True).communicate()[0].split('\n')
-	return modifiedFiles
-
-def generateMsg(rev, files):
-	content = '[rev] ' + rev + '\n'
-	for fileObj in files:
-		if fileObj != '':
-			content = content + '\t' + fileObj + '\n'
-	
-	content = content + '\n'
-	
-	return content 
+def getDiff(oldRev, newRev):
+	diff = Popen("git diff --stat " + oldRev + ".." + newRev, stdout=PIPE, shell=True).communicate()[0]
+	return diff
 
 user = os.getenv("GIT_USER")
 
@@ -57,15 +43,7 @@ else :
 	oldRev = result.group(1).strip()
 	newRev = result.group(2).strip()
 	ref = result.group(3).strip()
-	
-msg = ''
-revs = getRevList(oldRev, newRev)
-for rev in revs:
-	if rev != '':
-		fileList = getModifiedFiles(rev)
-		if not fileList:
-			break
-		
-		msg = msg + generateMsg(rev, fileList)
+
+msg = getDiff(oldRev, newRev)
 
 sendMail(user, ref, msg)
